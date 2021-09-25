@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Food Selecter</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+        <script language="javascript" type="text/javascript">
+            let cl=[];
+            $.getJSON('catelist.json', (data) => {
+                    var l=data.length;
+                    for(var i=0;i<l;i++){
+                        cl.push(data[i]);
+                        $('.category_1').append('<li id=cat'+i+'>'+data[i].name+'</li>')
+                    }
+                });
+        </script>
+        <style type="text/css">
+            * {
+                margin:0;
+                padding:0;
+            }
+            body {
+                background:white;
+            }
+            .title{
+                font-size:xx-large;
+                text-align:left;
+                padding:30px;
+                color:black;
+                margin:0 auto;
+            }
+            .head {
+                width:100%;
+                height:100px;
+                background:#f7f3;
+            }
+            .circle{
+                width: 150px;
+                height: 150px;
+                border-radius: 50%;
+                border-style: solid;
+                margin:0 auto;
+                border-color:black;
+                position: relative;
+            }
+            .main{
+                margin:10px;
+                background:#f7f3e8;
+            }
+            .circle p{
+                position: absolute;
+                font-size:50px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .title_call{
+                text-align:center;
+                padding:10px;
+                color:black;
+                font-size:40px;
+            }
+           .circle:hover { 
+                cursor: hand;
+                cursor: pointer;
+            }
+            #stop1{
+                color: white;
+                background-color: red;
+            }
+            #start1{
+                color:black;
+                background-color: yellow;
+            }
+            #stop2{
+                color: white;
+                background-color: red;
+            }
+            #start2{
+                color:black;
+                background-color: yellow;
+            }
+            .footer{
+                background:#CBCBCB;
+                width:100%;
+                height:50px;
+                position:absolute;
+            }
+            .footer span{
+                font-size:15px;
+                float:right;
+                position:relative;
+                top:50%;
+                color:black;
+                margin:0 10px 5px 0;
+            }
+            .category{
+                padding:30px 0 ;
+                text-align:center;
+            }
+            .summary{
+                margin:10px;
+            }
+            .action{
+                text-align:center;
+                margin:30px;
+            }
+            .detail{
+                margin:10px;
+                padding:5px;
+                background:#f7f3e8;
+            }
+            .hidden{
+                display: none;
+            }
+            .detail_box_wrap{
+            }
+            .detail_box_core{
+                background:white;
+                margin:10px;
+            }
+            .detail h3{
+                margin:15px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class='head'>
+            <div class='title'>Food Selecter</div>
+        </div>
+        
+        <div class='summary'>
+            今日のご飯・おかずが決まらないあなたへ．今日のご飯・おかずをランダムに決定します．
+        </div>
+        
+        <div class='main'>
+            <p class='title_call'>Let's Shuffle</p>
+            <div class='circle circle_1' id='start1'>
+                <p>Start</p>
+            </div>
+            <ul class='category_1 category' id='0'>
+            </ul>
+        </div>
+        
+        <div class='action'>
+            <h1></h1>
+        </div>
+        
+        <div class='detail hidden'>
+            <div class='main'>
+                <p class='title_call'>Let's go the recipe!<br>
+                    <span style='font-size:20px;'>-以下のどれかのレシピに遷移します-</span>
+                </p>
+                <div class='circle circle_2' id='start2'>
+                    <p>Start</p>
+                </div>
+            </div>
+            <h3 class='category_2'>より詳細な提案<span></span></h3>
+        </div>
+                    
+        <div class='footer'>
+            <span>Refered to food category on cookpad</span>
+        </div>
+    </body>
+    
+    
+    <script language="javascript" type="text/javascript">
+        function sleep(ms) {
+          return new Promise(resolve => setTimeout(resolve, ms));
+        };
+        function change(a,b){
+            if(b==1){
+                $(a).css('color','red');
+                $(a).css('font-size','30px');
+            }else{
+                $(a).css('font-size','16px');
+                $(a).css('color','black');
+            }
+        };
+        function getRand(min,max){
+            var a = Math.floor( Math.random() * (max + 1 - min) ) + min;
+            return a;
+        };
+        
+        $('.circle_1').on('click', function() {
+            sOs=$('.circle_1 p').text()
+            if(sOs=='Start'){
+                const speed=0.018;
+                $('.circle_1 p').text('Stop');
+                $('#start1').attr('id','stop1');
+                Timer=setInterval(function(){
+                    var cat_n=getRand(0,cl.length-1);
+                    for(var k=0;k<cl.length;k++){
+                        if(k==cat_n){
+                            change('#cat'+k,1);
+                        }else{
+                            change('#cat'+k,2);
+                        }
+                    }
+                    $('.category_1').attr('id',cat_n)
+                },1/speed);
+            }else{
+                $('#stop1').attr('id','start1');
+                $('.circle_1 p').text('Start');
+                clearInterval(Timer);
+                var choice_n=Number($('.category_1').attr('id'));
+                var food=$('#cat'+choice_n).text();
+                $('.action h1').text('あなたの食べるべき料理は'+food+'です');
+                $('.detail').removeClass('hidden');
+                $('.detail h3 span').text('（'+food+'）');
+                $('.detail .detail_box_wrap').remove();
+                var sub_counter=0;
+                for(var c=0;c<cl[choice_n]['sub'].length;c++){
+                    var name=cl[choice_n]['sub'][c]['name'];
+                    var link=cl[choice_n]['sub'][c]['link'];
+                    $('.detail').append(`
+                        <div class='detail_box_wrap'>
+                            <div class='detail_box_core' id=dbc`+c+`>
+                                <h4><a target="_blank" id="sc_`+sub_counter+`" style="color:black;" href="` + link + `">`
+                                + name + `</a></h4>
+                            </div>
+                        </div>
+                    `);
+                    sub_counter++;
+                    if('sub' in cl[choice_n]['sub'][c]){
+                        for(var c1=0;c1<cl[choice_n]['sub'][c]['sub'].length;c1++){
+                            var name1=cl[choice_n]['sub'][c]['sub'][c1]['name'];
+                            var link1=cl[choice_n]['sub'][c]['sub'][c1]['link'];
+                            $('#dbc'+c).append(`
+                                <a target="_blank" id="sc_`+sub_counter+`" href='`+ link1 +`'>`+ name1 + `</a>
+                            `);
+                            sub_counter++;
+                        };
+                    };
+                };
+                $('.category_2').attr('sc',sub_counter)
+            };
+        });
+
+        
+        $('.circle_2').on('click', function() {
+            var sc=Number($('.category_2').attr('sc'));
+            sOs=$('.circle_2 p').text();
+            if(sOs=='Start'){
+                const speed=0.018;
+                $('.circle_2 p').text('Stop');
+                $('#start2').attr('id','stop2');
+                Timer=setInterval(function(){
+                    var cat_n=getRand(0,sc);
+                    for(var k=0;k<sc;k++){
+                        if(k==cat_n){
+                            change('#sc_'+k,1);
+                        }else{
+                            change('#sc_'+k,2);
+                        }
+                    }
+                    $('.category_2').attr('id',cat_n);
+                },1/speed);
+            }else{
+                $('#stop2').attr('id','start2');
+                $('.circle_2 p').text('Start');
+                clearInterval(Timer);
+                var choice_n=Number($('.category_2').attr('id'));
+                var recipe_link=$('#sc_'+choice_n).attr('href');
+                window.open(recipe_link, '_blank');
+            };
+        });
+    </script>
+</html>
